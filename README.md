@@ -1,0 +1,2 @@
+# sinewave
+~ discord moderation bot
