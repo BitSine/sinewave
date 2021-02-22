@@ -8,5 +8,8 @@ edition = "2018"
 
 [dependencies]
 dotenv = "0.15.0"
+mongodb = "2.0.0-alpha"
+serde = "1.0.123"
 serenity = "0.10.2"
 tokio = { version = "1.2.0", features = ["macros", "rt-multi-thread"] }
+typed-builder = "0.9.0"

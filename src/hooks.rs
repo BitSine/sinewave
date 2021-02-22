@@ -1,5 +1,9 @@
 use crate::CommandCounter;
-use serenity::{client::Context, framework::standard::macros::hook, model::channel::Message};
+use serenity::{
+    client::Context,
+    framework::standard::{macros::hook, CommandResult},
+    model::channel::Message,
+};
 
 #[hook]
 pub async fn before(ctx: &Context, msg: &Message, command_name: &str) -> bool {
@@ -22,4 +26,17 @@ pub async fn before(ctx: &Context, msg: &Message, command_name: &str) -> bool {
 pub async fn delay_action(ctx: &Context, msg: &Message) {
     // You may want to handle a Discord rate limit if this fails.
     let _ = msg.react(ctx, '⏱').await;
+}
+
+#[hook]
+pub async fn after(
+    _ctx: &Context,
+    _msg: &Message,
+    command_name: &str,
+    command_result: CommandResult,
+) {
+    match command_result {
+        Ok(()) => println!("Processed command '{}'", command_name),
+        Err(why) => println!("Command '{}' returned error {:?}", command_name, why),
+    }
 }
