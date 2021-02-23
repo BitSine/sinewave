@@ -28,12 +28,13 @@ pub async fn prefix(ctx: &Context, msg: &Message, mut args: Args) -> CommandResu
             .await?
             .unwrap_or(Guild {
                 id: msg.guild_id.ok_or("Didnt run in a guild")?.0,
-                prefix: "~".to_string(),
+                prefix: Some("~".to_string()),
+                log_chnl_id: None,
             })
             .prefix;
 
         msg.channel_id
-            .say(&ctx.http, format!("current prefix is {}", prefix))
+            .say(&ctx.http, format!("current prefix is {:?}", prefix))
             .await?;
 
         return Ok(());

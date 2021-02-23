@@ -1,3 +1,5 @@
+// this isnt just for the event handler but for other misc setup things
+
 use serenity::{
     async_trait,
     client::{bridge::gateway::ShardManager, Context, EventHandler},

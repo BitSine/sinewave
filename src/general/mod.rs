@@ -1,6 +1,7 @@
 mod command_usage;
 mod ping;
 mod prefix;
+mod set_mod_log_channel;
 mod test;
 
 use command_usage::*;

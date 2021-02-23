@@ -2,8 +2,9 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Guild {
-    pub prefix: String,
+    pub prefix: Option<String>,
     pub id: u64,
+    pub log_chnl_id: Option<u64>,
 }
 
 #[derive(Serialize, Deserialize)]

@@ -3,6 +3,7 @@ mod handler;
 mod help;
 mod hooks;
 mod mongo;
+mod test_commands;
 
 use crate::handler::*;
 use crate::mongo::Guild;
@@ -20,8 +21,30 @@ use serenity::{
     Client,
 };
 
+use log::{error, info, LevelFilter};
+use log4rs::{
+    append::console::ConsoleAppender,
+    config::{Appender, Root},
+    encode::pattern::PatternEncoder,
+};
+
 #[tokio::main]
 async fn main() {
+    // before anything init the logger
+
+    let stdout: ConsoleAppender = ConsoleAppender::builder()
+        .encoder(Box::new(PatternEncoder::new(
+            "{h({d(%Y-%m-%d %H:%M:%S %Z)} | {l})}> {m}\n",
+        )))
+        .build();
+
+    let log_config = log4rs::config::Config::builder()
+        .appender(Appender::builder().build("stdout", Box::new(stdout)))
+        .build(Root::builder().appender("stdout").build(LevelFilter::Info))
+        .unwrap();
+
+    log4rs::init_config(log_config).unwrap();
+
     dotenv::dotenv().ok();
 
     let token = dotenv::var("TOKEN").expect("Error getting token");
@@ -62,11 +85,12 @@ async fn main() {
                                 .await
                                 .ok()?
                                 .unwrap_or(Guild {
-                                    prefix: "~".to_string(),
+                                    prefix: Some("~".to_string()),
                                     id: msg.guild_id.ok_or("Didnt run in a guild").ok()?.0,
+                                    log_chnl_id: None,
                                 });
 
-                        Some(guild.prefix)
+                        guild.prefix
                     })
                 })
                 .owners(owners)
@@ -99,6 +123,6 @@ async fn main() {
     }
 
     if let Err(why) = client.start().await {
-        println!("Client error: {:?}", why);
+        error!("Client error: {:?}", why);
     }
 }

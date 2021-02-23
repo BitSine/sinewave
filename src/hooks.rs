@@ -1,4 +1,5 @@
 use crate::CommandCounter;
+use log::{debug, info, warn};
 use serenity::{
     client::Context,
     framework::standard::{macros::hook, CommandResult},
@@ -7,7 +8,7 @@ use serenity::{
 
 #[hook]
 pub async fn before(ctx: &Context, msg: &Message, command_name: &str) -> bool {
-    println!(
+    info!(
         "Got command '{}' by user '{}'",
         command_name, msg.author.name
     );
@@ -18,6 +19,11 @@ pub async fn before(ctx: &Context, msg: &Message, command_name: &str) -> bool {
         .expect("Expected CommandCounter in TypeMap.");
     let entry = counter.entry(command_name.to_string()).or_insert(0);
     *entry += 1;
+    debug!(
+        "Current command count for {} is {}",
+        command_name,
+        counter.get(command_name).unwrap_or(&0)
+    );
 
     true
 }
@@ -30,13 +36,22 @@ pub async fn delay_action(ctx: &Context, msg: &Message) {
 
 #[hook]
 pub async fn after(
-    _ctx: &Context,
-    _msg: &Message,
+    ctx: &Context,
+    msg: &Message,
     command_name: &str,
     command_result: CommandResult,
 ) {
     match command_result {
-        Ok(()) => println!("Processed command '{}'", command_name),
-        Err(why) => println!("Command '{}' returned error {:?}", command_name, why),
+        Ok(()) => info!("Processed command '{}'", command_name),
+        Err(why) => {
+            warn!("Command '{}' returned error {:?}", command_name, why);
+            let _ = msg
+                .channel_id
+                .say(
+                    &ctx.http,
+                    format!("Command '{}' returned error {:?}", command_name, why),
+                )
+                .await;
+        }
     }
 }
