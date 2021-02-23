@@ -21,7 +21,7 @@ use serenity::{
     Client,
 };
 
-use log::{error, info, LevelFilter};
+use log::{debug, error, info, LevelFilter};
 use log4rs::{
     append::console::ConsoleAppender,
     config::{Appender, Root},
@@ -30,24 +30,35 @@ use log4rs::{
 
 #[tokio::main]
 async fn main() {
+    let arg_level = std::env::args().nth(1).unwrap_or("".to_string());
+
     // before anything init the logger
+    let level = if arg_level == "trace" {
+        LevelFilter::Trace
+    } else if arg_level == "debug" {
+        LevelFilter::Debug
+    } else {
+        LevelFilter::Info
+    };
 
     let stdout: ConsoleAppender = ConsoleAppender::builder()
         .encoder(Box::new(PatternEncoder::new(
-            "{h({d(%Y-%m-%d %H:%M:%S %Z)} | {l})}> {m}\n",
+            "{h({d(%Y-%m-%d %H:%M:%S %Z)} | {l} >)} {m}{n}",
         )))
         .build();
 
     let log_config = log4rs::config::Config::builder()
         .appender(Appender::builder().build("stdout", Box::new(stdout)))
-        .build(Root::builder().appender("stdout").build(LevelFilter::Info))
+        .build(Root::builder().appender("stdout").build(level))
         .unwrap();
 
     log4rs::init_config(log_config).unwrap();
+    info!("Logger initialized");
 
+    // rest of stuff
     dotenv::dotenv().ok();
-
     let token = dotenv::var("TOKEN").expect("Error getting token");
+    debug!("token: {}", token);
     let http = Http::new_with_token(&token);
 
     let (owners, bot_id) = match http.get_current_application_info().await {
@@ -65,6 +76,7 @@ async fn main() {
         }
         Err(why) => panic!("Could not access application info: {:?}", why),
     };
+    debug!("owners: {:?} | bot_id: {:?}", owners, bot_id);
 
     let framework = StandardFramework::new()
         .configure(|c| {
@@ -90,6 +102,7 @@ async fn main() {
                                     log_chnl_id: None,
                                 });
 
+                        debug!("prefix: {:?}", guild.prefix);
                         guild.prefix
                     })
                 })
