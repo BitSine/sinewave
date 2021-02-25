@@ -49,7 +49,7 @@ pub async fn after(
                 .channel_id
                 .say(
                     &ctx.http,
-                    format!("Command '{}' returned error {:?}", command_name, why),
+                    format!("Command `{}` returned error `{}`", command_name, why),
                 )
                 .await;
         }

@@ -56,6 +56,7 @@ pub async fn prefix(ctx: &Context, msg: &Message, mut args: Args) -> CommandResu
             },
             doc! {
                 "prefix": prefix.clone(),
+                // incase the guild doesnt exist already we just reupdate this
                 "id": msg.guild_id.ok_or("Didnt run in a guild")?.0
             },
             UpdateOptions::builder().upsert(true).build(),

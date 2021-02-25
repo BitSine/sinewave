@@ -83,10 +83,7 @@ async fn main() {
             c.on_mention(Some(bot_id))
                 .dynamic_prefix(|_ctx, msg| {
                     Box::pin(async move {
-                        let db = MongoClient::with_uri_str(&dotenv::var("MONGO_URL").ok()?)
-                            .await
-                            .ok()?
-                            .database("sinewave");
+                        let db = create_db_connection().await?;
                         let collection = db.collection_with_type::<Guild>("guilds");
                         let filter = doc! {
                             "id": msg.guild_id.unwrap().0
