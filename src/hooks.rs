@@ -13,6 +13,11 @@ pub async fn before(ctx: &Context, msg: &Message, command_name: &str) -> bool {
         command_name, msg.author.name
     );
 
+    let _ = msg
+        .channel_id
+        .say(&ctx.http, format!("running command `{}`", command_name))
+        .await;
+
     let mut data = ctx.data.write().await;
     let counter = data
         .get_mut::<CommandCounter>()

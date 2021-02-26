@@ -14,12 +14,13 @@ use std::sync::Arc;
 
 use general::*;
 use help::*;
-use mongodb::{bson::doc, Client as MongoClient};
+use mongodb::bson::doc;
 use serenity::{
     framework::{standard::buckets::LimitedFor, StandardFramework},
     http::Http,
     Client,
 };
+use test_commands::*;
 
 use log::{debug, error, info, LevelFilter};
 use log4rs::{
@@ -85,19 +86,21 @@ async fn main() {
                     Box::pin(async move {
                         let db = create_db_connection().await?;
                         let collection = db.collection_with_type::<Guild>("guilds");
-                        let filter = doc! {
-                            "id": msg.guild_id.unwrap().0
-                        };
-                        let guild =
-                            collection
-                                .find_one(filter, None)
-                                .await
-                                .ok()?
-                                .unwrap_or(Guild {
-                                    prefix: Some("~".to_string()),
-                                    id: msg.guild_id.ok_or("Didnt run in a guild").ok()?.0,
-                                    log_chnl_id: None,
-                                });
+
+                        let guild = collection
+                            .find_one(
+                                doc! {
+                                    "id": msg.guild_id?.0
+                                },
+                                None,
+                            )
+                            .await
+                            .ok()?
+                            .unwrap_or(Guild {
+                                prefix: Some("~".to_string()),
+                                id: msg.guild_id.ok_or("Didnt run in a guild").ok()?.0,
+                                log_chnl_id: None,
+                            });
 
                         debug!("prefix: {:?}", guild.prefix);
                         guild.prefix
@@ -118,7 +121,8 @@ async fn main() {
         .await
         //help and groups
         .help(&MY_HELP)
-        .group(&GENERAL_GROUP);
+        .group(&GENERAL_GROUP)
+        .group(&TESTCOMMANDS_GROUP);
 
     let mut client = Client::builder(&token)
         .event_handler(Handler)

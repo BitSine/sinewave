@@ -31,8 +31,17 @@ pub async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
         }
     };
 
-    msg.reply(ctx, &format!("The shard latency is {:?}", runner.latency))
-        .await?;
+    msg.reply(
+        ctx,
+        &format!(
+            "The shard latency is {}",
+            runner
+                .latency
+                .ok_or("ping is undefiend somehow")?
+                .as_secs_f64()
+        ),
+    )
+    .await?;
 
     Ok(())
 }
